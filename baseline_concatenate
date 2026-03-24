@@ -1,0 +1,600 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Feb 14 07:57:55 2024
+
+@author: James
+"""
+
+import os
+from pathlib import Path
+import h5py
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy.signal
+from matplotlib.backends.backend_pdf import PdfPages
+import pyintan
+import time
+import tkinter as tk
+import signal
+from tkinter import filedialog
+
+from intanutil.header import (read_header,
+                              header_to_result)
+from intanutil.data import (calculate_data_size,
+                            read_all_data_blocks,
+                            check_end_of_file,
+                            parse_data,
+                            data_to_result)
+from intanutil.filter import apply_notch_filter
+from custom.data_1 import data_to_result_no_stim
+
+sampling_rate=30000
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib as mpl
+mpl.rcParams['figure.dpi'] = 300       # for on-screen display
+mpl.rcParams['savefig.dpi'] = 300      # for saving figures
+# In[ ]: TO LOAD ALREADY CONCATENATED ARRAY
+'''load concatenated_data array'''
+Fs = 2000
+# Create a Tkinter root window, which is required for the file dialog
+root = tk.Tk()
+root.withdraw()  # Hide the root window
+
+# Open a file dialog to select the .npy file
+file_path = filedialog.askopenfilename(
+    title="Select .npy file",
+    filetypes=[("NumPy files", "*.npy")],
+    initialdir="."  # Optional: set the initial directory
+)
+
+# Check if a file was selected
+if file_path:
+    # Load the selected .npy file
+    concatenated_data = np.load(file_path)
+    print("File loaded successfully.")
+    print("Data:", concatenated_data)
+    print(f'The number of channels: {concatenated_data.shape[0]}, The data duration: {concatenated_data.shape[1]/sampling_rate}s')
+
+else:
+    print("No file selected.")
+
+# In[ ]: TO LOAD ALREADY CONCATENATED ARRAY_downsampled
+'''load concatenated_data array'''
+Fs = 2000
+# Create a Tkinter root window, which is required for the file dialog
+root = tk.Tk()
+root.withdraw()  # Hide the root window
+
+# Open a file dialog to select the .npy file
+file_path = filedialog.askopenfilename(
+    title="Select .npy file",
+    filetypes=[("NumPy files", "*.npy")],
+    initialdir="."  # Optional: set the initial directory
+)
+
+# Check if a file was selected
+if file_path:
+    # Load the selected .npy file
+    concatenated_signal_low_pass_ds = np.load(file_path)
+    print("File loaded successfully.")
+    print("Data:", concatenated_signal_low_pass_ds)
+    print(f'The number of channels: {concatenated_signal_low_pass_ds.shape[0]}, The data duration: {concatenated_signal_low_pass_ds.shape[1]/sampling_rate}s')
+
+else:
+    print("No file selected.")
+# In[]: TO LOAD FOLDER OF RHS FILES TO CONCATENATE
+import tkinter as tk
+from tkinter import filedialog
+import os
+import numpy as np
+import glob
+from intanutil.header import read_header
+from intanutil.data import calculate_data_size, read_all_data_blocks, data_to_result
+
+# Create a tkinter root window (it won't be shown)
+root = tk.Tk()
+root.title("Browse for the Folder Containing RHS Files")
+root.withdraw()  # Hide the root window
+
+# Open a folder dialog to select a directory
+folder_path = filedialog.askdirectory(
+    title="Select a Folder Containing RHS Files"
+)
+
+# Check if a folder was selected
+if folder_path:
+    print("Selected folder path:", folder_path)
+
+    # Use glob to get all .rhs files in the selected folder
+    rhs_files = sorted(glob.glob(os.path.join(folder_path, "*.rhs")))
+
+    # Check if there are .rhs files in the folder
+    if len(rhs_files) == 0:
+        print("No .rhs files found in the selected folder.")
+    else:
+        print(f"Found {len(rhs_files)} .rhs files.")
+
+        # Initialize an empty list to store the data
+        concatenated_data = []
+
+        # Loop through each .rhs file and concatenate the data
+        for file_path in rhs_files:
+            print(f"Processing file: {file_path}")
+            
+            # Step 1: Read header
+            with open(file_path, 'rb') as fid:
+                header = read_header(fid)
+
+                # Step 2: Calculate data size and read all data blocks
+                # data_size = calculate_data_size(header, file_path, fid)
+                data_present, filesize, num_blocks, num_samples = calculate_data_size(header, file_path, fid)
+                #data_blocks = read_all_data_blocks(fid, header, data_size)
+                data = read_all_data_blocks(header, num_samples, num_blocks, fid)
+                
+                # Initialize result if needed
+                result = {}  # Or some other appropriate structure
+                
+                # Step 3: Parse the data and convert to a usable format
+                result = data_to_result_no_stim(header, data, result)
+
+                # Step 4: Extract amplifier data (assuming it's named 'amplifier_data')
+                amplifier_data = result['amplifier_data']
+
+                # Append the amplifier data to the list for concatenation
+                concatenated_data.append(amplifier_data)
+
+        # Concatenate all the arrays along the time axis
+        concatenated_data = np.concatenate(concatenated_data, axis=1)  # Adjust axis based on data structure
+
+        # Save the concatenated data to a new file (optional)
+        save_path = os.path.join(folder_path, 'concatenated_data.npy')
+        np.save(save_path, concatenated_data)
+
+        print(f"Concatenation complete. Data saved at: {save_path}")
+        print("Shape of concatenated data:", concatenated_data.shape)
+        print(f'The number of channels: {concatenated_data.shape[0]}, The data duration: {concatenated_data.shape[1]/sampling_rate}s')
+
+    # Close the root window
+    root.destroy()
+
+else:
+    print("No folder selected.")
+
+
+# In[ ]: FILTER DEFINITIONS
+
+def LP_IIR(signal,cutoff,fs,order):
+    nyq = 0.5 * fs 
+    normal_cutoff = cutoff / nyq
+    b, a = scipy.signal.iirfilter(order, normal_cutoff,
+                        btype='lowpass', analog=False, ftype='butter')
+    #print(b, a, sep="\n")
+    y_lfilter = scipy.signal.lfilter(b, a, signal) 
+    
+    return y_lfilter
+
+def HP_IIR(signal,cutoff,fs,order):
+    nyq = 0.5 * fs 
+    normal_cutoff = cutoff / nyq
+    b, a = scipy.signal.iirfilter(order, normal_cutoff,
+                        btype='highpass', analog=False, ftype='butter')
+    #print(b, a, sep="\n")
+    y_lfilter = scipy.signal.lfilter(b, a, signal) 
+    
+    return y_lfilter
+
+def BP_IIR(signal,cutoff1,cutoff2,fs,order):
+    nyq = 0.5 * fs 
+    normal_cutoff1 = cutoff1 / nyq
+    normal_cutoff2 = cutoff2 / nyq
+
+    b, a = scipy.signal.iirfilter(order,[normal_cutoff1,normal_cutoff2],
+                        btype='bandpass', analog=False, ftype='butter')
+    #print(b, a, sep="\n")
+    y_lfilter = scipy.signal.lfilter(b, a, signal) 
+    
+    return y_lfilter
+
+def BS_IIR(signal,cutoff1,cutoff2,fs,order):
+    nyq = 0.5 * fs 
+    normal_cutoff1 = cutoff1 / nyq
+    normal_cutoff2 = cutoff2 / nyq
+    b, a = scipy.signal.iirfilter(order, [normal_cutoff1,normal_cutoff2],
+                        btype='bandstop', analog=False, ftype='butter')
+    #print(b, a, sep="\n")
+    y_lfilter = scipy.signal.lfilter(b, a, signal) 
+    
+    return y_lfilter
+
+
+def AP_IIR(signal,fs,order):
+    nyq = 0.5 * fs 
+    cutoff1=300
+    cutoff2=3000
+    normal_cutoff1 = cutoff1 / nyq
+    normal_cutoff2 = cutoff2 / nyq
+
+    b, a = scipy.signal.iirfilter(order,[normal_cutoff1,normal_cutoff2],
+                        btype='bandpass', analog=False, ftype='butter')
+    #print(b, a, sep="\n")
+    y_lfilter = scipy.signal.lfilter(b, a, signal) 
+    
+    return y_lfilter
+
+
+def LFP_IIR(signal,fs,order):
+    nyq = 0.5 * fs 
+    cutoff=1000
+
+    normal_cutoff = cutoff / nyq
+    b, a = scipy.signal.iirfilter(order, normal_cutoff,
+                        btype='lowpass', analog=False, ftype='butter')
+    #print(b, a, sep="\n")
+    y_lfilter = scipy.signal.lfilter(b, a, signal) 
+    
+    return y_lfilter
+
+# In[]: DC Offset
+
+Offset = np.mean(concatenated_data, axis=0) 
+
+concatenated_data = concatenated_data - Offset
+# In[3]
+import numpy as np
+from scipy import signal
+
+def apply_notch_filter(data, notch_freq, sampling_rate, quality_factor=30):
+    """
+    Applies a notch filter to each channel in the data array.
+
+    Parameters:
+    - data: numpy array with shape (channels, samples)
+    - notch_freq: float, frequency to remove (e.g., 60 Hz)
+    - sampling_rate: int, samples per second
+    - quality_factor: float, controls notch width (higher = narrower)
+
+    Returns:
+    - filtered_data: numpy array with the same shape as input
+    """
+    b, a = signal.iirnotch(notch_freq, quality_factor, sampling_rate)
+    filtered_data = np.zeros_like(data)
+
+    for channel in range(data.shape[0]):
+        signal_data = data[channel, :]
+        if len(signal_data) < 3 * max(len(a), len(b)):
+            raise ValueError("Signal too short for filtfilt.")
+        filtered_data[channel, :] = signal.filtfilt(b, a, signal_data)
+
+    return filtered_data
+
+# Example usage:
+# Assume `concatenated_data` is of shape (channels, samples)
+notch_freq = 60
+sampling_rate = 30000
+concatenated_data = apply_notch_filter(concatenated_data, notch_freq, sampling_rate)
+
+# In[]
+import numpy as np
+from scipy.signal import butter, filtfilt, decimate
+
+# Define low-pass filter function
+def LP_IIR(data, cutoff, fs, order=3):
+    b, a = butter(order, cutoff / (0.5 * fs), btype='low')
+    return filtfilt(b, a, data)
+
+# Parameters
+fs = 30000  # Original sampling rate (Hz)
+cutoff1_LFP = 300  # Cutoff for low-pass filter
+order = 3
+downsample_factor = 15  # To reduce from 30kHz to 2kHz
+
+# Allocate arrays for downsampled data
+No_of_Channels = concatenated_data.shape[0]
+filtered_length = concatenated_data.shape[1] // downsample_factor
+concatenated_signal_low_pass_ds = np.zeros((No_of_Channels, filtered_length))
+
+# Process each channel
+for N in range(No_of_Channels):
+    # Step 1: Low-pass filter
+    filtered_signal = LP_IIR(concatenated_data[N, :], cutoff1_LFP, fs, order)
+
+    # Step 2: Downsample with anti-aliasing handled by our own LP filter
+    decimated_signal = decimate(filtered_signal, downsample_factor, ftype='fir', zero_phase=True)
+
+    # Step 3: Handle any rounding differences
+    trimmed_length = min(filtered_length, len(decimated_signal))
+    concatenated_signal_low_pass_ds[N, :trimmed_length] = decimated_signal[:trimmed_length]
+    
+# Save the concatenated data to a new file (optional)
+save_path = os.path.join(folder_path, 'concatenated_signal_low_pass_ds.npy')
+np.save(save_path, concatenated_signal_low_pass_ds)
+
+print(f"Concatenation complete. Data saved at: {save_path}")
+print("Shape of concatenated_signal_low_pass_ds data:", concatenated_signal_low_pass_ds.shape)
+print(f'The number of channels: {concatenated_signal_low_pass_ds.shape[0]}, The data duration: {concatenated_signal_low_pass_ds.shape[1]/2000}s')
+
+# In[ ]: band pass extracted_segments array into desired low frequency bands
+
+def bandpass_concatenated_data(filtered_segments,fs,order=3):
+    '''
+    Create filtered_segments arrays dedicated to a certain low frequency band
+    Parameters:
+        - array: filtered_segments array [trials, channels, samples]
+        - sampling frequency: fs
+        - order: filter order
+        
+    Returns:
+        - filtered_segments_delta
+        - filtered_segments_theta
+        - filtered_segments_beta
+        - filtered_segments_gamma
+        - filtered_segments_ripple
+    '''
+    # Delta
+    # cutoff_delta = 1  # Cutoff frequency for lowpass filter (Hz)
+    cutoff1_delta = 4
+    order = 3  # Filter order
+
+    # Apply the filter to each channel of the data
+    f_segments_delta = np.zeros_like(array)
+    for i in range(array.shape[0]):  # Loop through each channel
+        f_segments_delta[i, :] = LP_IIR(
+            filtered_segments[i, :], cutoff1_delta, fs, order)
+
+    # Theta
+    cutoff_theta = 4  # Cutoff frequency for lowpass filter (Hz)
+    cutoff1_theta = 12
+
+    # Apply the filter to each channel of the data
+    f_segments_theta = np.zeros_like(array)
+    for i in range(array.shape[0]):  # Loop through each channel
+        f_segments_theta[i, :] = BP_IIR(
+            filtered_segments[i, :], cutoff_theta, cutoff1_theta, fs, order)
+
+    # Beta
+    cutoff_beta = 12  # Cutoff frequency for lowpass filter (Hz)
+    cutoff1_beta = 30
+
+    # Apply the filter to each channel of the data
+    f_segments_beta = np.zeros_like(array)
+    for i in range(array.shape[0]):  # Loop through each channel
+        f_segments_beta[i, :] = BP_IIR(
+            filtered_segments[i, :], cutoff_beta, cutoff1_beta, fs, order)
+
+    # Gamma (30-100Hz)
+    cutoff_gamma = 30  # Cutoff frequency for lowpass filter (Hz)
+    cutoff1_gamma = 100
+
+    # Apply the filter to each channel of the data
+    f_segments_gamma = np.zeros_like(array)
+    for i in range(array.shape[0]):  # Loop through each channel
+        f_segments_gamma[i, :] = BP_IIR(
+            filtered_segments[i, :], cutoff_gamma, cutoff1_gamma, fs, order)
+
+    # Ripple (100-250Hz)
+    cutoff_ripple = 100  # Cutoff frequency for lowpass filter (Hz)
+    cutoff1_ripple = 250
+
+    # Apply the filter to each channel of the data
+    f_segments_ripple = np.zeros_like(array)
+    for i in range(array.shape[0]):  # Loop through each channel
+        f_segments_ripple[i, :] = BP_IIR(
+            filtered_segments[i, :], cutoff_ripple, cutoff1_ripple, fs, order)
+        
+    return f_segments_delta, f_segments_theta, f_segments_beta, f_segments_gamma, f_segments_ripple
+# Example Usage:
+array = concatenated_signal_low_pass_ds
+# array = concatenated_data_low_pass_ds
+fs = 2000
+f_segments_delta, f_segments_theta, f_segments_beta, f_segments_gamma, f_segments_ripple = bandpass_concatenated_data(array,fs,order=3)
+print('Function Complete!')    
+
+# In[] Plot low frequency bands
+def plot_f_segments(start, stop, f_segments_delta, f_segments_theta, f_segments_beta, f_segments_gamma, f_segments_ripple):
+    '''
+    Plot frequency bands from f_segments_arrays
+    Parameters:
+        - 
+    Returns:
+        - time_axis
+    '''
+    # Create time axis
+    time_axis = np.arange(f_segments_beta.shape[1])/fs
+    
+    # Get shape of filtered_segments
+    channels, samples = f_segments_beta.shape
+    print('channels, samples: ', f_segments_beta.shape)
+
+    # Plot individual trial responses and display each frequency band
+    for ch in range(channels):
+        # plt.plot(time_axis[start:stop], f_segments_delta[ch, start:stop], label='delta(1-4Hz)')
+        plt.plot(time_axis[start:stop], f_segments_theta[ch, start:stop], label='theta(4-12Hz)')
+        plt.plot(time_axis[start:stop], f_segments_beta[ch, start:stop], label='beta(12-30Hz)')
+        plt.plot(time_axis[start:stop], f_segments_gamma[ch, start:stop], label='gamma(30-100Hz)')
+        # plt.plot(time_axis[start:stop], f_segments_ripple[ch,start:stop], label='ripple(100-250Hz)')
+        # plt.plot(time_axis[start:stop], concatenated_signal_low_pass_ds[ch, start:stop], label='all(0-300Hz)', alpha=0.5)
+        plt.xlabel('Time(s)')
+        plt.ylabel('uV')
+        plt.ylim(-500, 500)
+        # plt.axvline(x=stim_time, color='black',
+        #             linestyle='--', linewidth=2, label='STIM')
+        plt.title(f'Frequency bands channel {ch}')
+        plt.grid(True)
+        plt.legend(loc='upper right', fontsize='x-small', ncol=2)
+        plt.show()
+    
+    return time_axis
+
+# Example Usage:
+fs = 2000
+start = int(0*fs)
+stop = int(900*fs)
+# stim_time = 2
+time_axis = plot_f_segments(start, stop,
+        f_segments_delta, f_segments_theta, f_segments_beta, 
+        f_segments_gamma, f_segments_ripple)
+print('plot_f_segments COMPLETE!')
+
+# In[] Plot high frequency band
+def plot_f_segments(start, stop, input_data):
+    '''
+    Plot frequency bands from f_segments_arrays
+    Parameters:
+        - 
+    Returns:
+        - time_axis
+    '''
+    # Create time axis
+    time_axis = np.arange(input_data.shape[1])/samp_rate
+    
+    # Get shape of filtered_segments
+    channels, samples = input_data.shape
+    print('channels, samples: ', input_data.shape)
+
+    # Plot individual trial responses and display each frequency band
+    for ch in range(channels):
+        plt.plot(time_axis[start:stop], input_data[ch, start:stop], label='>300Hz')
+        plt.xlabel('Time(s)')
+        plt.ylabel('uV')
+        # plt.ylim(-1000, 1000)
+        # plt.axvline(x=stim_time, color='black',
+        #             linestyle='--', linewidth=2, label='STIM')
+        plt.title(f'Frequency bands channel {ch}')
+        plt.grid(True)
+        plt.legend(loc='upper right', fontsize='x-small', ncol=2)
+        plt.show()
+    
+    return time_axis
+
+# Example Usage:
+
+samp_rate = 30000
+start = int(0*samp_rate)
+stop = int(concatenated_data.shape[1])
+input_data = concatenated_signal_high_pass
+# stim_time = 2
+time_axis = plot_f_segments(start, stop, input_data)
+print('plot_f_segments COMPLETE!')
+
+
+# In[]
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def extract_time_series_slice(concatenated_data, start_time, end_time, fs=30000):
+    """
+    Extracts a slice of the time-series data for each channel within the specified time window.
+
+    Parameters:
+    - concatenated_data: numpy array of shape (channels, samples)
+    - start_time: start time of the window in seconds
+    - end_time: end time of the window in seconds
+    - fs: sampling frequency (default: 30 kHz)
+
+    Returns:
+    - time_series_slice: numpy array of shape (channels, selected_samples)
+    """
+    num_channels, num_samples = concatenated_data.shape
+    start_sample = int(start_time * fs)
+    end_sample = int(end_time * fs)
+    # Extract the slice of data for each channel
+    time_series_slice = concatenated_data[:, start_sample:end_sample]
+    return time_series_slice
+def plot_time_series(time_series_slice, layout, fs, title='Time-Series Visualization'):
+    num_rows = len(layout)
+    num_cols = len(layout[0])
+
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=(16, 16), sharex=True, sharey=True)
+    time_axis = np.arange(time_series_slice.shape[1]) / fs
+
+    # Map A/B/C/D labels to actual channel indices
+    bank_offsets = {"A": 0, "B": 32, "C": 64, "D": 64}  # D maps to last 32 channels
+
+    for i, row in enumerate(layout):
+        for j, channel_name in enumerate(row):
+            bank = channel_name[0]
+            ch_num = int(channel_name[1:])
+            channel_index = bank_offsets[bank] + ch_num
+
+            ax = axes[i, j]
+            ax.plot(time_axis, time_series_slice[channel_index], color='black')
+            for spine in ax.spines.values():
+                spine.set_visible(False)
+            # Optional: remove ticks
+            ax.set_xticks([])
+            ax.set_yticks([])
+            # ax.set_title(channel_name)
+            ax.set_xlim([0, (time_series_slice.shape[1] - 1) / fs])
+            ax.set_ylim(-500, 500)
+
+    # plt.suptitle(title, fontsize=16)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.show()
+
+
+# Example data
+sampling_rate = 2000  # Define the sampling rate (Hz)
+start_time = 40  # Start time in seconds
+end_time = 300  # End time in seconds
+
+# Extract time-series slice
+# time_series_slice = extract_time_series_slice(concatenated_signal_low_pass_ds, start_time=200, end_time=220, fs=sampling_rate)
+time_series_slice_ttx = extract_time_series_slice(concatenated_signal_low_pass_ds, start_time=200, end_time=300, fs=sampling_rate)
+
+# Define the channel layout as provided
+# layout = [
+#     ['A7', 'A6', 'A14', 'A20', 'B24', 'B25', 'B17', 'B11'],
+#     ['A0', 'A4', 'A13', 'A22', 'B31', 'B27', 'B18', 'B9'],
+#     ['A23', 'A17', 'A27', 'A11', 'B6', 'B30', 'B10', 'B20'],
+#     ['A31', 'A19', 'A12', 'A18', 'B0', 'B2', 'B19', 'B13'],
+#     ['A28', 'A2', 'A29', 'A15', 'B3', 'B29', 'B12', 'B16'],
+#     ['A5', 'A21', 'A1', 'A25', 'B26', 'B4', 'B14', 'B8'],
+#     ['A24', 'A3', 'A10', 'A16', 'B7', 'B28', 'B21', 'B15'],
+#     ['A26', 'A30', 'A8', 'A9', 'B5', 'B1', 'B23', 'B22']
+# ]
+# layout = [
+#     ['A7', 'A6', 'A14', 'A20'],
+#     ['A0', 'A4', 'A13', 'A22'],
+#     ['A23', 'A17', 'A27', 'A11'],
+#     ['A31', 'A19', 'A12', 'A18'],
+#     ['A28', 'A2', 'A29', 'A15'],
+#     ['A5', 'A21', 'A1', 'A25'],
+#     ['A24', 'A3', 'A10', 'A16'],
+#     ['A26', 'A30', 'A8', 'A9']
+# ]
+layout = [
+    ['B24', 'B25', 'B17', 'B11'],
+    ['B31', 'B27', 'B18', 'B9'],
+    ['B6', 'B30', 'B10', 'B20'],
+    ['B0', 'B2', 'B19', 'B13'],
+    ['B3', 'B29', 'B12', 'B16'],
+    ['B26', 'B4', 'B14', 'B8'],
+    ['B7', 'B28', 'B21', 'B15'],
+    ['B5', 'B1', 'B23', 'B22']
+]
+# layout = [
+#     ['C7', 'C6', 'C14', 'C20'],
+#     ['C0', 'C4', 'C13', 'C22'],
+#     ['C23', 'C17', 'C27', 'C11'],
+#     ['C31', 'C19', 'C12', 'C18'],
+#     ['C28', 'C2', 'C29', 'C15'],
+#     ['C5', 'C21', 'C1', 'C25'],
+#     ['C24', 'C3', 'C10', 'C16'],
+#     ['C26', 'C30', 'C8', 'C9']
+# ]
+# layout = [
+#     ['D24', 'D25', 'D17', 'D11'],
+#     ['D31', 'D27', 'D18', 'D9'],
+#     ['D6', 'D30', 'D10', 'D20'],
+#     ['D0', 'D2', 'D19', 'D13'],
+#     ['D3', 'D29', 'D12', 'D16'],
+#     ['D26', 'D4', 'D14', 'D8'],
+#     ['D7', 'D28', 'D21', 'D15'],
+#     ['D5', 'D1', 'D23', 'D22']
+# ]
+# Plot the time-series data according to the layout
+# plot_time_series(time_series_slice, layout, fs=sampling_rate, title=f'Time-Series from {start_time}s to {end_time}s')
+plot_time_series(time_series_slice_ttx, layout, fs=sampling_rate, title=f'Time-Series from {start_time}s to {end_time}s')
+
