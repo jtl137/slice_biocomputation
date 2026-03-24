@@ -16,8 +16,7 @@ This repository contains the analysis code used to generate Figures 2–4 and
 
 ## Reproducing Figure 3
 1. Run 'extractedsegments.py'
-2. Run 'plot_avg_time_series.py' for panel Bi and Bii. Input A and Input B correspond
-to the variables extracted_segments1 and extracted_segments2
+Input A and Input B correspond to the variables extracted_segments1 and extracted_segments2
 
 ## Reproducing Figure 4
 1. Run `classification_analysis.py' to generate features and tables for each dataset
