@@ -22,10 +22,18 @@ Input A and Input B correspond to the variables extracted_segments1 and extracte
 1. Run `classification_analysis.py' to generate features and tables for each dataset
 2. Run `compile_classifier_accuracy_auc.py` to compile table results and figure panels 
 for cross-validation performance, AUC, confusion matrices
-"""
 
+## Reproducing Figure 5
+1. Run '
+   
 ## Reproducing Sup. Figure 2
 1. Run 'baseline_concatenate.py'
 
 ## Reproducing Sup. Figure 3
 1. Run 'extractedsegments.py'
+
+## Reproducing Sup. Figure 4
+1. Run 'C_regularization_SFIG4
+   
+## Reproducing Sup. Figure 5
+1. Run 'inter-site_distance_SFIG5
