@@ -1,0 +1,195 @@
+
+import os
+import pandas as pd
+import numpy as np
+import scipy.stats as stats
+import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib as mpl
+mpl.rcParams['figure.dpi'] = 300       # for on-screen display
+mpl.rcParams['savefig.dpi'] = 300      # for saving figures
+# 1. Load the performance data
+# (Assuming you saved 'all_slices' to a CSV previously)
+base_dir = "/Volumes/PRESTIGE/Slice - Rat/manuscript_BMES/classification_results/classifier_performance/compile_all"
+
+
+perf_file = os.path.join(base_dir, "all_classifier_performance.csv")
+
+# df_perf = pd.read_csv(perf_file)
+
+"""uncomment below section for BMES paper"""
+# Skip the first 2 rows so pandas uses the 3rd row as the column headers
+df_perf = pd.read_csv(perf_file, skiprows=2)
+
+# Optional but good practice: strip whitespace just in case
+df_perf.columns = df_perf.columns.str.strip()
+
+# # Now your original filtering will work perfectly:
+"""comment out"""
+# Filter for the 'overall' class and a specific feature condition
+# target_condition = "ThetaBeta PSD" # Change to whichever condition you want to analyze
+# target_condition = "Beta PSD" # Change to whichever condition you want to analyze
+target_condition = "Theta PSD" # Change to whichever condition you want to analyze
+
+df_overall = df_perf[(df_perf["Class"] == "overall") & 
+                     (df_perf["Condition"] == target_condition)].copy()
+
+
+# =========================================================
+# 1. Filter Data (ALL CONDITIONS)
+# =========================================================
+target_conditions = ["Theta PSD", "Beta PSD", "ThetaBeta PSD"]
+
+df_overall = df_perf[
+    (df_perf["Class"] == "overall") &
+    (df_perf["Condition"].isin(target_conditions))
+].copy()
+
+# =========================================================
+# 2. Add Inter-Site Distance Data
+# =========================================================
+distance_map = {
+    "slice01": 150,
+    "slice02": 750,
+    "slice03": 427,
+}
+
+df_overall["Distance"] = df_overall["Slice"].map(distance_map)
+
+metric = "CV_Mean"
+df_valid = df_overall.dropna(subset=["Distance", metric])
+
+if df_valid.empty:
+    raise ValueError("No valid distance data found!")
+
+# =========================================================
+# 3. Calculate Correlations (PER classifier + condition)
+# =========================================================
+results = []
+
+for (clf, cond), subset in df_valid.groupby(["Classifier", "Condition"]):
+    if len(subset) > 2:
+        r, p = stats.pearsonr(subset["Distance"], subset[metric])
+        results.append({
+            "Classifier": clf,
+            "Condition": cond,
+            "r": r,
+            "p": p
+        })
+
+results_df = pd.DataFrame(results)
+
+print("\n--- Correlation Results ---")
+if not results_df.empty:
+    print(results_df.round(4).to_string(index=False))
+else:
+    print("Not enough data for correlations.")
+
+# =========================================================
+# 4. Plot
+# =========================================================
+sns.set_theme(style="whitegrid")
+
+g = sns.lmplot(
+    data=df_valid,
+    x="Distance",
+    y=metric,
+    col="Classifier",
+    hue="Condition",                     # ✅ IMPORTANT CHANGE
+    col_wrap=3,
+    height=4,
+    aspect=1.2,
+    ci=None,
+    markers=["o", "s", "D"],             # ✅ distinct markers
+    scatter_kws={"alpha": 0.7, "s": 60, "edgecolor": "k"},
+    line_kws={"linewidth": 2}
+)
+# Move legend to the far right outside all panels
+g._legend.set_bbox_to_anchor((0.8, 0.2), transform=g.fig.transFigure)
+g._legend.set_loc("center left")
+
+# Optional styling
+g._legend.set_title("Condition")
+for text in g._legend.texts:
+    text.set_fontweight('bold')
+g._legend.get_title().set_fontweight('bold')
+# =========================================================
+# 5. Formatting + Chance Line
+# =========================================================
+for ax in g.axes.flat:
+    ax.axhline(0.5, color='red', linestyle='--', linewidth=1.5)
+
+    # Bold tick labels
+    for label in ax.get_xticklabels():
+        label.set_fontweight('bold')
+    for label in ax.get_yticklabels():
+        label.set_fontweight('bold')
+
+g.set(ylim=(0.4, 1))
+
+g.set_axis_labels(
+    "Inter-Site Distance (\u03bcm)",
+    metric,
+    fontsize=16,
+    fontweight='bold'
+)
+
+g.set_titles(
+    col_template="{col_name}",
+    fontsize=20,
+    fontweight='bold'
+)
+
+g.fig.suptitle(
+    "Classifier Performance vs. Inter-Site Distance\n(All Conditions)",
+    y=1.05,
+    fontweight="bold",
+    fontsize=20
+)
+
+# =========================================================
+# 6. Annotate correlations (clean multi-line per panel)
+# =========================================================
+for ax in g.axes.flat:
+    clf = ax.get_title()
+
+    # Extract classifier name from title
+    clf_name = clf
+
+    subset_stats = results_df[results_df["Classifier"] == clf_name]
+
+    if not subset_stats.empty:
+        lines = []
+        for _, row in subset_stats.iterrows():
+            cond = row["Condition"]
+            r_val = row["r"]
+            p_val = row["p"]
+
+            lines.append(f"{cond}: r={r_val:.2f}, p={p_val:.3f}")
+
+        text_str = "\n".join(lines)
+
+        ax.text(
+            0.02, 0.98,
+            text_str,
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
+            fontsize=11,
+            fontweight='bold',
+            bbox=dict(
+                boxstyle="round,pad=0.4",
+                facecolor="white",
+                edgecolor="gray",
+                alpha=0.9
+            )
+        )
+
+# =========================================================
+# 7. Global bold settings
+# =========================================================
+plt.rcParams['font.weight'] = 'bold'
+plt.rcParams['axes.labelweight'] = 'bold'
+
+plt.tight_layout()
+plt.show()
