@@ -1,0 +1,759 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+"""
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib as mpl
+mpl.rcParams['figure.dpi'] = 300       # for on-screen display
+mpl.rcParams['savefig.dpi'] = 300      # for saving figures
+
+# In[]
+import numpy as np
+
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250409/1463A/tissue/stim/SC_5uA_DIV3/STIM_CC5.0_PC1.0_PW0.1_PositiveFirst_PS1_CS0_IPD0.2/Outputs_LFP_zoomed/extracted_segments_LFP_Ch2.npy"
+
+# Load the specified .npy file
+try:
+    extracted_segments1 = np.load(file_path)
+    print("File loaded successfully.")
+    print("Data shape:", extracted_segments1.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250409/1463A/tissue/stim/SC_5uA_DIV3/STIM_CC5.0_PC1.0_PW0.1_PositiveFirst_PS1_CS0_IPD0.2/Outputs_LFP_zoomed/extracted_segments_LFP_Ch21.npy"
+# Load the specified .npy file
+try:
+    extracted_segments2 = np.load(file_path)
+    print("File loaded successfully.")
+    print("Data shape:", extracted_segments2.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+# Load corresponding baseline recording already concatenated
+"""Notch and downsampling to 2kHz has already been done on this array"""
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250409/1463A/tissue/baseline/1463A_baseline_DIV3_250412_095705/concatenated_signal_low_pass_ds.npy"
+# Load the specified .npy file
+try:
+    baseline_activity1 = np.load(file_path)
+    print("File loaded successfully.")
+    print("Data shape:", baseline_activity1.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+    
+# Load impedance info
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250409/1463A/tissue/stim/SC_5uA_DIV3/impedance.csv"
+# file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250409/1463A/notissue/SCS_ch2-21_removetissue/impedance.csv"
+# Load the specified .npy file
+try:
+    # Load the CSV file into a NumPy array
+    impedance_1 = np.genfromtxt(file_path, delimiter=',', skip_header=1)
+    print("File loaded successfully.")
+    print("Data:", impedance_1)
+    print('Channels and Headers: ', impedance_1.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+# In[]
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250521/1463A/tissue/stim/SC_B5-B6_DIV2/STIM_CC5.0_PC1.0_PW0.1_PositiveFirst_PS1_CS0_IPD0.2/Outputs_LFP_zoomed/extracted_segments_LFP_Ch37.npy"
+
+# Load the specified .npy file
+try:
+    extracted_segments3 = np.load(file_path)
+    print("File loaded successfully.")
+    print("Data shape:", extracted_segments3.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250521/1463A/tissue/stim/SC_B5-B6_DIV2/STIM_CC5.0_PC1.0_PW0.1_PositiveFirst_PS1_CS0_IPD0.2/Outputs_LFP_zoomed/extracted_segments_LFP_Ch38.npy"
+# Load the specified .npy file
+try:
+    extracted_segments4 = np.load(file_path)
+    print("File loaded successfully.")
+    print("Data shape:", extracted_segments4.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+# Load corresponding baseline recording already concatenated
+"""Notch and downsampling to 2kHz has already been done on this array"""
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250521/1463A/tissue/baseline/DIV1_250522_081314/concatenated_signal_low_pass_ds.npy"
+# Load the specified .npy file
+try:
+    baseline_activity2 = np.load(file_path)
+    print("File loaded successfully.")
+    print("Data shape:", baseline_activity2.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+    
+# Load impedance info
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250521/1463A/tissue/stim/SC_B5-B6_DIV2/impedance.csv"
+# Load the specified .npy file
+try:
+    # Load the CSV file into a NumPy array
+    impedance_2 = np.genfromtxt(file_path, delimiter=',', skip_header=1)
+    print("File loaded successfully.")
+    print("Data:", impedance_2)
+    print('Channels and Headers: ', impedance_2.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+# In[]
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250604_TTX/Tissue/stim/SC_DIV1_B2B6/STIM_CC5.0_PC1.0_PW0.1_PositiveFirst_PS1_CS0_IPD0.2/Outputs_LFP_zoomed/extracted_segments_LFP_Ch34.npy"
+
+# Load the specified .npy file
+try:
+    extracted_segments5 = np.load(file_path)
+    print("File loaded successfully.")
+    print("Data shape:", extracted_segments5.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250604_TTX/Tissue/stim/SC_DIV1_B2B6/STIM_CC5.0_PC1.0_PW0.1_PositiveFirst_PS1_CS0_IPD0.2/Outputs_LFP_zoomed/extracted_segments_LFP_Ch38.npy"
+
+# Load the specified .npy file
+try:
+    extracted_segments6 = np.load(file_path)
+    print("File loaded successfully.")
+    print("Data shape:", extracted_segments6.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+# Load corresponding baseline recording already concatenated
+"""Notch and downsampling to 2kHz has already been done on this array"""
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250604_TTX/Tissue/baseline/DIV1_250605_091357/concatenated_signal_low_pass_ds.npy"
+# Load the specified .npy file
+try:
+    baseline_activity3 = np.load(file_path)
+    print("File loaded successfully.")
+    print("Data shape:", baseline_activity3.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+    
+# Load impedance info
+# Example: Replace this with your actual path
+file_path = r"/Volumes/PRESTIGE/Slice - Rat/Slice_250604_TTX/Tissue/stim/SC_DIV1_B2B6/impedance.csv"
+# Load the specified .npy file
+try:
+    # Load the CSV file into a NumPy array
+    impedance_3 = np.genfromtxt(file_path, delimiter=',', skip_header=1)
+    print("File loaded successfully.")
+    print("Data:", impedance_3)
+    print('Channels and Headers: ', impedance_3.shape)
+except FileNotFoundError:
+    print(f"File not found: {file_path}")
+except Exception as e:
+    print(f"Error loading file: {e}")
+
+# In[] Exclude channels with impedances greater than 2Mohm
+import numpy as np
+
+IMPEDANCE_THRESH = 2e6  # 2 Megaohm
+
+def get_low_impedance_channels(impedances, thresh=IMPEDANCE_THRESH):
+    """
+    Return indices of channels with impedance <= threshold.
+    """
+    impedances = np.asarray(impedances)
+    return np.where(impedances <= thresh)[0]
+
+low_imp_chs1 = get_low_impedance_channels(impedance_1[:,4])
+print(f"{len(low_imp_chs1)} channels pass impedance threshold")
+low_imp_chs2 = get_low_impedance_channels(impedance_2[:,4])
+low_imp_chs3 = get_low_impedance_channels(impedance_3[:,4])
+
+extracted_segments1_imp = extracted_segments1[:, low_imp_chs1, :]
+extracted_segments2_imp = extracted_segments2[:, low_imp_chs1, :]
+extracted_segments3_imp = extracted_segments3[:, low_imp_chs2, :]
+extracted_segments4_imp = extracted_segments4[:, low_imp_chs2, :]
+extracted_segments5_imp = extracted_segments5[:, low_imp_chs3, :]
+extracted_segments6_imp = extracted_segments6[:, low_imp_chs3, :]
+# In[]
+import scipy.signal
+from scipy import signal
+# ========== APPLY NOTCH FILTER ==========
+def apply_notch_filter(data, notch_freq, sampling_rate, quality_factor=30):
+    """
+    Applies a notch filter to each channel in the data array.
+
+    Parameters:
+    - data: numpy array with shape (channels, samples)
+    - notch_freq: float, frequency to remove (e.g., 60 Hz)
+    - sampling_rate: int, samples per second
+    - quality_factor: float, controls notch width (higher = narrower)
+
+    Returns:
+    - filtered_data: numpy array with the same shape as input
+    """
+    b, a = signal.iirnotch(notch_freq, quality_factor, sampling_rate)
+    filtered_data = np.zeros_like(data)
+
+    for channel in range(data.shape[0]):
+        signal_data = data[channel, :]
+        if len(signal_data) < 3 * max(len(a), len(b)):
+            raise ValueError("Signal too short for filtfilt.")
+        filtered_data[channel, :] = signal.filtfilt(b, a, signal_data)
+
+    return filtered_data
+
+fs = 2000  # Hz
+
+extracted_segments1_imp = apply_notch_filter(extracted_segments1_imp, 60, fs)
+extracted_segments2_imp = apply_notch_filter(extracted_segments2_imp, 60, fs)
+extracted_segments3_imp = apply_notch_filter(extracted_segments3_imp, 60, fs)
+extracted_segments4_imp = apply_notch_filter(extracted_segments4_imp, 60, fs)
+extracted_segments5_imp = apply_notch_filter(extracted_segments5_imp, 60, fs)
+extracted_segments6_imp = apply_notch_filter(extracted_segments6_imp, 60, fs)
+# In[]
+from scipy.signal import butter, filtfilt
+
+# Bandpass filter function
+def bandpass_filter(data, lowcut, highcut, fs, order=4):
+    nyquist = 0.5 * fs
+    low = lowcut / nyquist
+    high = highcut / nyquist
+    b, a = butter(order, [low, high], btype="band")
+    return filtfilt(b, a, data)
+
+lowcut=4
+highcut=30
+extracted_segments1_lowband = bandpass_filter(extracted_segments1_imp, lowcut, highcut, fs)
+extracted_segments2_lowband = bandpass_filter(extracted_segments2_imp, lowcut, highcut, fs)
+extracted_segments3_lowband = bandpass_filter(extracted_segments3_imp, lowcut, highcut, fs)
+extracted_segments4_lowband = bandpass_filter(extracted_segments4_imp, lowcut, highcut, fs)
+extracted_segments5_lowband = bandpass_filter(extracted_segments5_imp, lowcut, highcut, fs)
+extracted_segments6_lowband = bandpass_filter(extracted_segments6_imp, lowcut, highcut, fs)
+# In[] correct way to split theta and beta bins
+import numpy as np
+from scipy.signal import welch, butter, filtfilt
+
+def bandpass_filter(data, lowcut, highcut, fs, order=4):
+    """
+    Applies a zero-phase Butterworth bandpass filter.
+    Applies filter along the last axis (time).
+    """
+    nyq = 0.5 * fs
+    low = lowcut / nyq
+    high = highcut / nyq
+    b, a = butter(order, [low, high], btype='band')
+    return filtfilt(b, a, data, axis=-1)
+
+def compute_psd_bins_theta_beta(signal, bin_size, start_time=2, end_time=7, fs=2000, nperseg=256):
+    """
+    Compute PSD features for theta (4-12 Hz) and beta (12-30 Hz) bands
+    per bin, per channel, for each trial.
+    
+    Returns:
+        psd_bins: np.array, shape [trials, bins, channels, 2] (theta, beta)
+    """
+    trials, channels, num_samples = signal.shape
+
+    # Compute start and end indices
+    start_idx = int(start_time * fs)
+    end_idx   = int(end_time * fs)
+
+    num_bins = (end_idx - start_idx) // bin_size
+
+    # Output array: trials x bins x channels x 2 (theta, beta)
+    psd_bins = np.zeros((trials, num_bins, channels, 2))
+
+    for i in range(num_bins):
+        start = start_idx + i * bin_size
+        stop  = start_idx + (i + 1) * bin_size
+
+        for trial in range(trials):
+            for channel in range(channels):
+                segment = signal[trial, channel, start:stop]
+
+                if len(segment) == 0:
+                    continue
+
+                # Compute PSD
+                freqs, psd = welch(segment, fs=fs, nperseg=nperseg)
+
+                # Band masks
+                theta_mask = (freqs >= 4) & (freqs <= 12)
+                beta_mask  = (freqs > 12) & (freqs <= 30)
+
+                # Integrate power in each band
+                theta_power = np.trapz(psd[theta_mask], freqs[theta_mask])
+                beta_power  = np.trapz(psd[beta_mask],  freqs[beta_mask])
+
+                psd_bins[trial, i, channel, 0] = theta_power
+                psd_bins[trial, i, channel, 1] = beta_power
+
+    # Log-transform for stability
+    psd_bins = np.log10(psd_bins + 1e-12)
+
+    return psd_bins
+
+# ==========================================
+# Application Pipeline
+# ==========================================
+fs = 2000
+lowcut = 4
+highcut = 30
+
+# Assuming extracted_segments1_imp ... extracted_segments8_imp are already loaded
+segments_imp = {
+    1: extracted_segments1_imp,
+    2: extracted_segments2_imp,
+    3: extracted_segments3_imp,
+    4: extracted_segments4_imp,
+    5: extracted_segments5_imp,
+    6: extracted_segments6_imp,
+}
+
+# Dictionaries to store our final outputs
+X_tb = {}
+theta_psd_bins = {}
+beta_psd_bins = {}
+thetabeta = {}
+
+for i in range(1, 11):
+    print(f"Processing segment {i}...")
+    
+    # 1. Bandpass filter
+    extracted_lowband = bandpass_filter(segments_imp[i], lowcut, highcut, fs)
+    
+    # 2. Extract unflattened PSD bins
+    # (Excludes last 32 and ch13 and 15 depending on your slicing before this function)
+    X_tb_unflattened = compute_psd_bins_theta_beta(
+        extracted_lowband, 
+        bin_size=1000, 
+        start_time=4, 
+        end_time=7, 
+        nperseg=1024,
+        fs=fs
+    )
+    
+    X_tb[i] = X_tb_unflattened
+    
+    # 3. Separate Theta and Beta
+    theta_unflattened = X_tb_unflattened[..., 0]
+    beta_unflattened  = X_tb_unflattened[..., 1]
+    
+    # 4. Reshape/flatten for classifiers
+    thetabeta[i]      = X_tb_unflattened.reshape(X_tb_unflattened.shape[0], -1)
+    theta_psd_bins[i] = theta_unflattened.reshape(theta_unflattened.shape[0], -1)
+    beta_psd_bins[i]  = beta_unflattened.reshape(beta_unflattened.shape[0], -1)
+
+print("Feature extraction complete!")
+
+# You can now access your flattened classifier inputs like this:
+# thetabeta[1]       (equivalent to your old thetabeta1)
+# theta_psd_bins[1]  (equivalent to your old theta_psd_bins1)
+# beta_psd_bins[8]   (equivalent to your old beta_psd_bins8)
+# In[]
+# In[] z-score to baseline activity recorded before experiment
+import numpy as np
+
+def make_pseudo_trials(
+    baseline_activity,
+    fs=2000,
+    trial_duration_sec=3.0,
+    drop_remainder=True
+):
+    """
+    baseline_activity: (channels, samples)
+    returns: (trials, channels, samples_per_trial)
+    """
+    channels, total_samples = baseline_activity.shape
+    samples_per_trial = int(trial_duration_sec * fs)
+
+    n_trials = total_samples // samples_per_trial
+
+    if drop_remainder:
+        baseline_activity = baseline_activity[:, :n_trials * samples_per_trial]
+
+    # reshape
+    baseline_trials = baseline_activity.reshape(
+        channels,
+        n_trials,
+        samples_per_trial
+    ).transpose(1, 0, 2)
+
+    return baseline_trials
+
+# 1. Collect your baseline activities into a dictionary
+baselines = {
+    1: baseline_activity1,
+    2: baseline_activity2,
+    3: baseline_activity3,
+    # 4: baseline_activity4,
+    # 5: baseline_activity5
+}
+
+# 2. Map which extracted segment uses which baseline
+segment_to_baseline_map = {
+    1: 1, 2: 1,
+    3: 2, 4: 2,
+    5: 3, 6: 3,
+    # 7: 4, 8: 4,
+    # 9: 5, 10: 5
+}
+
+# 3. Map each baseline to its specific low impedance channel list
+impedance_channels = {
+    1: low_imp_chs1,  # Applies to baseline 1 (segments 1 & 2)
+    2: low_imp_chs2,  # Applies to baseline 2 (segments 3 & 4)
+    3: low_imp_chs3,  # Applies to baseline 3 (segments 5 & 6)
+    # 4: low_imp_chs4,   # Applies to baseline 4 (segments 7 & 8)
+    # 5: low_imp_chs5   # Applies to baseline 5 (segments 9 & 10)
+}
+
+# Dictionaries to store your final z-scored, flattened matrices
+thetabeta_z = {}
+theta_psd_bins_z = {}
+beta_psd_bins_z = {}
+
+# 4. Process each of the 4 baselines
+for baseline_id in range(1, 4):
+    print(f"Processing baseline {baseline_id}...")
+    
+    # Omit high impedance channels using the specific list for this pair
+    baseline_imp = baselines[baseline_id][impedance_channels[baseline_id], :]
+    
+    # Make pseudo trials
+    baseline_trials = make_pseudo_trials(
+        baseline_imp,
+        fs=2000,
+        trial_duration_sec=3.0
+    )
+    
+    # Compute baseline PSD bins
+    X_baseline = compute_psd_bins_theta_beta(
+        baseline_trials,
+        bin_size=1000,     
+        start_time=0,      # baseline starts at beginning of pseudo-trial
+        end_time=3.0,      
+        fs=2000,
+        nperseg=1024
+    )
+    
+    # Collapse baseline across trials to get mean and std
+    baseline_mean = X_baseline.mean(axis=0)  # (bins, channels, 2)
+    baseline_std  = X_baseline.std(axis=0)   # (bins, channels, 2)
+    
+    # 5. Apply feature-wise normalization to the corresponding segments
+    # Find which segments correspond to this baseline
+    segments_for_this_baseline = [seg for seg, b_id in segment_to_baseline_map.items() if b_id == baseline_id]
+    
+    for seg_id in segments_for_this_baseline:
+        # X_tb dictionary comes from the script provided in the previous turn
+        X_tb_z = (X_tb[seg_id] - baseline_mean) / baseline_std
+        
+        # Flatten for classifiers
+        thetabeta_z[seg_id]      = X_tb_z.reshape(X_tb_z.shape[0], -1)
+        theta_psd_bins_z[seg_id] = X_tb_z[..., 0].reshape(X_tb_z.shape[0], -1)
+        beta_psd_bins_z[seg_id]  = X_tb_z[..., 1].reshape(X_tb_z.shape[0], -1)
+
+print("Z-scoring complete!")
+
+
+# In[]: Run Evaluation and C_Regularization Tuning
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import GroupKFold, GroupShuffleSplit, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.pipeline import Pipeline
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, roc_curve, auc
+
+# Define baseline classifiers
+classifiers = {
+    'Logistic Regression': LogisticRegression(max_iter=1000),
+    'SVM': SVC(kernel='linear', probability=True), # Note: probability=True added for ROC curve
+    'Random Forest': RandomForestClassifier(),
+    'K-Nearest Neighbors': KNeighborsClassifier(n_neighbors=5),
+    'Linear Discriminant Analysis': LinearDiscriminantAnalysis()
+}
+
+def evaluate_features(
+    X1, X2, label,
+    dim_reduction=None,
+    n_components=10,
+    block_size=2,     
+    n_splits=5,
+    random_state=42,
+    plot_roc=True
+):
+    import warnings
+    from sklearn.exceptions import ConvergenceWarning
+    warnings.filterwarnings("ignore", category=ConvergenceWarning)
+
+    if X1.shape[1] != X2.shape[1]:
+        raise ValueError("X1 and X2 must have the same number of features (columns).")
+
+    n1, n2 = X1.shape[0], X2.shape[0]
+    n_pairs = min(n1, n2)
+    if n1 != n2:
+        warnings.warn(f"X1 and X2 have unequal lengths (n1={n1}, n2={n2}); truncating to {n_pairs} pairs.")
+        X1 = X1[:n_pairs]
+        X2 = X2[:n_pairs]
+
+    if block_size % 2 != 0:
+        raise ValueError("block_size must be even (each AB pair = 2 trials).")
+
+    pairs_per_block = block_size // 2
+
+    # Stack A then B
+    X = np.vstack((X1, X2))
+    y = np.concatenate((np.zeros(n_pairs, dtype=int), np.ones(n_pairs, dtype=int)))
+
+    # Build AB-pair-based group labels
+    pair_idx = np.arange(n_pairs, dtype=int)
+    block_ids = pair_idx // pairs_per_block  
+
+    groups = np.empty(2 * n_pairs, dtype=int)
+    groups[:n_pairs] = block_ids        
+    groups[n_pairs:] = block_ids        
+
+    n_unique_groups = np.unique(groups).size
+
+    report_rows = []
+    roc_info = {}
+    confusion_rows = []
+
+    # BLOCK-AWARE HOLDOUT
+    gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=random_state)
+    (train_idx, test_idx), = gss.split(X, y, groups=groups)
+
+    X_train, X_test = X[train_idx], X[test_idx]
+    y_train, y_test = y[train_idx], y[test_idx]
+
+    for clf_name, clf in classifiers.items():
+        steps = [("scaler", StandardScaler())]
+        if dim_reduction == "PCA":
+            steps.append(("pca", PCA(n_components=n_components, random_state=random_state)))
+        steps.append(("clf", clf))
+        pipe = Pipeline(steps)
+
+        pipe.fit(X_train, y_train)
+        y_pred = pipe.predict(X_test)
+
+        report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
+        for cls, metrics in report.items():
+            if isinstance(metrics, dict):
+                for metric_name, metric_value in metrics.items():
+                    report_rows.append({
+                        "Condition": label, "DimReduction": dim_reduction or "None",
+                        "Classifier": clf_name, "Class": cls, "Metric": metric_name,
+                        "Value": metric_value, "Type": "Holdout"
+                    })
+
+        cm = confusion_matrix(y_test, y_pred, labels=[0, 1])
+        row_sums = cm.sum(axis=1, keepdims=True)
+        cm_norm = np.divide(cm, row_sums, out=np.zeros_like(cm, dtype=float), where=row_sums != 0)
+
+        confusion_rows.append({
+            "Condition": label, "DimReduction": dim_reduction or "None", "Classifier": clf_name,
+            "TN": cm_norm[0, 0], "FP": cm_norm[0, 1], "FN": cm_norm[1, 0], "TP": cm_norm[1, 1], "Type": "Holdout"
+        })
+
+        try:
+            if len(np.unique(y_test)) < 2:
+                raise ValueError("Single-class test set")
+            if hasattr(pipe.named_steps["clf"], "predict_proba"):
+                y_score = pipe.predict_proba(X_test)[:, 1]
+            else:
+                y_score = pipe.decision_function(X_test)
+
+            fpr, tpr, _ = roc_curve(y_test, y_score)
+            auc_val = auc(fpr, tpr)
+            roc_info[clf_name] = (fpr, tpr, auc_val)
+        except Exception as e:
+            pass
+
+    if plot_roc and len(roc_info) > 0:
+        plt.figure(figsize=(8, 6))
+        for clf_name, (fpr, tpr, auc_val) in roc_info.items():
+            plt.plot(fpr, tpr, lw=2, label=f"{clf_name} (AUC={auc_val:.3f})")
+        plt.plot([0, 1], [0, 1], 'k--', lw=1)
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.title(f"ROC — {label}")
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
+
+    # BLOCK-AWARE CV
+    n_splits_eff = min(n_splits, n_unique_groups)
+    if n_splits_eff >= 2:
+        gkf = GroupKFold(n_splits=n_splits_eff)
+        cv_results = {}
+        for clf_name, clf in classifiers.items():
+            steps = [("scaler", StandardScaler())]
+            if dim_reduction == "PCA":
+                steps.append(("pca", PCA(n_components=n_components, random_state=random_state)))
+            steps.append(("clf", clf))
+            pipe = Pipeline(steps)
+
+            scores = cross_val_score(pipe, X, y, cv=gkf, groups=groups, scoring="accuracy")
+            cv_results[f"{label}_{clf_name}"] = scores
+
+            report_rows.append({"Condition": label, "DimReduction": dim_reduction or "None", "Classifier": clf_name, "Class": "overall", "Metric": "CV_Mean", "Value": scores.mean(), "Type": "CrossVal"})
+            report_rows.append({"Condition": label, "DimReduction": dim_reduction or "None", "Classifier": clf_name, "Class": "overall", "Metric": "CV_Std", "Value": scores.std(ddof=1), "Type": "CrossVal"})
+    else:
+        cv_results = {}
+
+    summary_table = pd.DataFrame(report_rows)
+    confusion_table = pd.DataFrame(confusion_rows)
+
+    return summary_table, confusion_table, X, y, cv_results, groups
+
+
+def evaluate_C_range(
+    X, y, groups,
+    C_values=[0.01, 0.1, 1, 10, 100],
+    dim_reduction=None,
+    n_components=10,
+    n_splits=5,
+    random_state=42
+):
+    results = []
+    gkf = GroupKFold(n_splits=n_splits)
+
+    for C in C_values:
+        classifiers_c = {
+            "Logistic Regression (L2)": LogisticRegression(penalty='l2', C=C, max_iter=1000, solver='lbfgs'),
+            "Linear SVM": SVC(kernel='linear', C=C)
+        }
+
+        for clf_name, clf in classifiers_c.items():
+            steps = [("scaler", StandardScaler())]
+            if dim_reduction == "PCA":
+                steps.append(("pca", PCA(n_components=n_components, random_state=random_state)))
+            steps.append(("clf", clf))
+
+            pipe = Pipeline(steps)
+            scores = cross_val_score(pipe, X, y, cv=gkf, groups=groups, scoring="accuracy")
+
+            results.append({
+                "Model": clf_name,
+                "C": C,
+                "Mean Accuracy": scores.mean(),
+                "Std Accuracy": scores.std(ddof=1)
+            })
+
+    return pd.DataFrame(results)
+
+
+# ==========================================
+# Apply Loop Over All 4 Pairs
+# ==========================================
+
+# Group the z-scored inputs we made in the previous step
+pairs_to_evaluate = {
+    1: (thetabeta_z[1], thetabeta_z[2]),  # Baseline 1
+    2: (thetabeta_z[3], thetabeta_z[4]),  # Baseline 2
+    3: (thetabeta_z[5], thetabeta_z[6]),  # Baseline 3
+}
+
+all_c_results = []
+
+for slice_idx, (X_A, X_B) in pairs_to_evaluate.items():
+    print(f"\n======================================")
+    print(f"Evaluating Pair {slice_idx}")
+    print(f"======================================")
+    
+    # 1. Evaluate Features and get the 'groups' out
+    summary_table, confusion_table, X_concat, y_concat, cv_results, groups = evaluate_features(
+        X_A, X_B, label=f"Slice_{slice_idx}",
+        dim_reduction=None, 
+        n_components=10, 
+        block_size=2, 
+        n_splits=5, 
+        random_state=42, 
+        plot_roc=False # Setting this to False so we don't get 4 individual ROC plots (change to True if you want them)
+    )
+    
+    # 2. Run the Regularization Tuning
+    print(f"Running C-regularization tuning for Slice {slice_idx}...")
+    results_df = evaluate_C_range(
+        X_concat, y_concat, groups,
+        C_values=[0.01, 0.1, 1, 10, 100],
+        dim_reduction=None,
+        n_components=10                                                                                                       
+    )
+    
+    # Tag the dataframe with the pair ID so we can distinguish them in the aggregate
+    results_df["Slice"] = f"Slice {slice_idx}"
+    all_c_results.append(results_df)
+
+# ==========================================
+# Aggregate Data, Plot, and Save
+# ==========================================
+import os
+
+# Combine all pairs into a single DataFrame
+aggregate_df = pd.concat(all_c_results, ignore_index=True)
+
+source_file = folder = "/Volumes/PRESTIGE/Slice - Rat/manuscript_BMES/classification_results_2/c_regularization"
+# Get the folder containing the source file
+source_folder = os.path.dirname(source_file)
+
+save_path = os.path.join(source_folder, "c_regularization_aggregate.csv")
+
+# Save to CSV (Removed the second string argument)
+aggregate_df.to_csv(save_path, index=False)
+print(f"\nSaved aggregate results to: {save_path}")
+
+# Plot all slices on a common graph
+plt.figure(figsize=(10, 6))
+
+# Swap hue and style so Pairs dictate color, and Models dictate line/marker shape
+sns.lineplot(
+    data=aggregate_df, 
+    x="C", 
+    y="Mean Accuracy", 
+    hue="Slice",       # <--- Changed: Pairs are now colors
+    style="Model",    # <--- Changed: Models are now markers/dashes
+    markers=True, 
+    dashes=True       # <--- Changed to True: helps differentiate the models visually
+)
+
+plt.xscale("log")
+plt.xlabel("Regularization strength (C)", fontweight="bold")
+plt.ylabel("Mean CV Accuracy", fontweight="bold")
+plt.ylim(0.4, 1.05)
+plt.title("Performance vs Regularization (All Slices)", fontweight="bold")
+
+# Move legend outside to prevent covering data
+plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left') 
+plt.grid(True)
+plt.tight_layout()
+plt.show()
